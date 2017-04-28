@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <cstdint>
-#include "SDL.h"
+#include <SDL2/SDL.h>
 #include <string>
 
 #define internal static
@@ -19,11 +19,12 @@
 
 #define MILLISECONDS_IN_A_SECOND 1000
 
+//Enum to store all possible actions the user could take.
 enum gameCommandsEnum {
 	GAMECOMMAND_UP,
 	GAMECOMMAND_DOWN,
 	GAMECOMMAND_ACTION, //Brings the pads closer to each other
-	GAMECOMMAND_MAXACTIONS //Isn't a command by itself - is used in order to determine how many gameCommands there are 
+	MAX_GAMECOMMANDS //Isn't a command by itself - is used in order to determine how many gameCommands there are 
 };
 
 enum timerParam {
@@ -35,10 +36,7 @@ global_variable SDL_Window* globalWindow = 0; //TODO: Inspect if the window real
 global_variable SDL_Renderer* globalRenderer = 0;
 global_variable SDL_Texture* globalTexture = 0;
 
-global_variable bool gameCommands[GAMECOMMAND_MAXACTIONS] = {}; //This array contains what game commands the user is inputting currently
-
-//Enum to store all possible actions the user could take.
-
+global_variable bool gameCommands[MAX_GAMECOMMANDS] = {}; //This array contains what game commands the user is inputting currently
 
 //Safely handles the closing of the whole program
 internal void close() {
@@ -106,7 +104,7 @@ internal void initTimers(int fpsLimit) {
 
 //TODO: Customizable controls
 internal void handleKeyboardInput(const uint8* keyboardState) {
-	if (keyboardState[SDL_SCANCODE_UP]) { //TODO: FIX ERROR!!!!
+	if (keyboardState[SDL_SCANCODE_UP]) {
 		gameCommands[GAMECOMMAND_UP] = 1;
 		printf("up\n");
 	} else {
