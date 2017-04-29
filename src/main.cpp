@@ -2,6 +2,10 @@
 #include <cstdint>
 #include <SDL2/SDL.h>
 #include <string>
+#include <iostream>
+#include <fstream>
+#include <ctime>
+#include <sstream>
 
 #define internal static
 #define local_persist static
@@ -19,7 +23,7 @@
 
 #define MILLISECONDS_IN_A_SECOND 1000
 
-//Enum to store all possible actions the user could take.
+//Enum to store all possible actions the player could take.
 enum gameCommandsEnum {
 	GAMECOMMAND_UP,
 	GAMECOMMAND_DOWN,
@@ -27,14 +31,22 @@ enum gameCommandsEnum {
 	MAX_GAMECOMMANDS //Isn't a command by itself - is used in order to determine how many gameCommands there are 
 };
 
+
 enum timerParam {
 	TIMER_FPS,
 	TIMER_TICKS
 };
 
+enum logEnums {
+	LOG_FILE,
+	LOG_CONSOLE,
+	LOG_BOTH
+};
+
 global_variable SDL_Window* globalWindow = 0; //TODO: Inspect if the window really needs to be global or not
 global_variable SDL_Renderer* globalRenderer = 0;
 global_variable SDL_Texture* globalTexture = 0;
+global_variable std::ofstream globalLogFile;
 
 global_variable bool gameCommands[MAX_GAMECOMMANDS] = {}; //This array contains what game commands the user is inputting currently
 
@@ -44,14 +56,77 @@ internal void close() {
 	SDL_Quit();
 }
 
+//Returns the current date in a format that's favorable for logging.
+internal std::string timeStamp() {
+	time_t currentTime = time(0);
+	tm timeStruct;
+	localtime_s(&timeStruct, &currentTime);
+	std::stringstream timeString;
+	timeString << (timeStruct.tm_year + 1900)
+		<< "-"
+		<< (timeStruct.tm_mon + 1)
+		<< "-"
+		<< (timeStruct.tm_mday)
+		<< "-"
+		<< (timeStruct.tm_hour)
+		<< ":"
+		<< (timeStruct.tm_min)
+		<< ":"
+		<< (timeStruct.tm_sec);
+	return timeString.str();
+}
+
+
+
+//TODO: Implement in-game console
+internal void logToConsole(std::string text) {
+	std::cout << timeStamp() << " " << text << std::endl;
+}
+
+internal bool logToFile(std::string text) {
+	bool success = true;
+	if (globalLogFile.is_open()) {
+		globalLogFile << timeStamp() << " " << text << std::endl;
+		globalLogFile.close();
+		success = true;
+	} else {
+		logToConsole("Error while writing to the log file");
+		success = false;
+	}
+	return success;
+}
+
+
+internal void gameLog(std::string text, int whereToLog) {
+	switch (whereToLog) {
+		case LOG_CONSOLE:
+			logToConsole(text);
+			break;
+		case LOG_FILE:
+			logToFile(text);
+			break;
+		case LOG_BOTH:
+			logToConsole(text);
+			logToFile(text);
+			break;
+	}
+}
 
 //Helps cut down on frantical copy-pasting of code. Keyboard manufacturers hate him!
 internal void logErrorSDL(std::string text) {
-	printf("%s\n SDL_Error:%s\n", text.c_str(), SDL_GetError()); //TODO: Replace printf with an actual file logger
+	std::stringstream SDLtext;
+	SDLtext << text << std::endl << "SDL Error: SDL_GetError()" << std::endl;
+	gameLog(SDLtext.str(), LOG_BOTH);
+}
+
+//TODO: FIX
+internal void initLogFile() {
+	globalLogFile.open("logs/latest.log", std::ios::app | std::ios::trunc);
+	
 }
 
 //Initializes SDL and handles all errors
-internal bool init(std::string title, int width, int height) {
+internal bool initSDL(std::string title, int width, int height) {
 	bool success = true;
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) { //TODO: Probably will be replaced by SDL_INIT_EVERYTHING
 		logErrorSDL("Failed to initialize SDL!");
@@ -81,7 +156,7 @@ internal bool init(std::string title, int width, int height) {
 	return success;
 }
 
-internal uint32 timerCallback(uint32 interval, void *param) {
+internal uint32 timerCallbackSDL(uint32 interval, void *param) {
 	SDL_Event event;
 	SDL_UserEvent userEvent = {};
 	userEvent.type = SDL_USEREVENT;
@@ -97,7 +172,7 @@ internal uint32 timerCallback(uint32 interval, void *param) {
 
 internal void initTimers(int fpsLimit) {
 	int fpsDelay = MILLISECONDS_IN_A_SECOND / fpsLimit; //The amount of milliseconds that should pass between each frame
-	if (SDL_AddTimer(fpsDelay, timerCallback, (int32 *)TIMER_FPS) == 0) {
+	if (SDL_AddTimer(fpsDelay, timerCallbackSDL, (int32 *)TIMER_FPS) == 0) {
 		logErrorSDL("Error while creating the FPS timer!");
 	}
 }
@@ -106,19 +181,17 @@ internal void initTimers(int fpsLimit) {
 internal void handleKeyboardInput(const uint8* keyboardState) {
 	if (keyboardState[SDL_SCANCODE_UP]) {
 		gameCommands[GAMECOMMAND_UP] = 1;
-		printf("up\n");
+		gameLog("up", LOG_BOTH); //Temporary debug call
 	} else {
 		gameCommands[GAMECOMMAND_UP] = 0;
 	}
 	if (keyboardState[SDL_SCANCODE_DOWN]) {
 		gameCommands[GAMECOMMAND_DOWN] = 1;
-		printf("down\n");
 	} else {
 		gameCommands[GAMECOMMAND_DOWN] = 0;
 	}
 	if (keyboardState[SDL_SCANCODE_SPACE]) {
 		gameCommands[GAMECOMMAND_ACTION] = 1;
-		printf("space\n");
 	} else {
 		gameCommands[GAMECOMMAND_ACTION] = 0;
 	}
@@ -134,7 +207,8 @@ int main(int argc, char* args[]) {
 	int windowHeight = 600;
 	int fpsLimit = 144;
 
-	init(gameTitle, windowWidth, windowHeight);
+	initSDL(gameTitle, windowWidth, windowHeight);
+	initLogFile();
 	initTimers(fpsLimit);
 
 	const uint8* keyboardState = SDL_GetKeyboardState(0); //Updates every time SDL_PollEvent() is called
