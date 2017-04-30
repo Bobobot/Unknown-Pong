@@ -2,4 +2,4 @@
 
 #Must be executed in this directory
 
-g++ -std=c++11 -O3 -fpermissive -o ../Unknown-Pong_LINUX ../src/main.cpp ../src/filesystem_handler.cpp ../src/global.cpp ../src/input_handler.cpp ../src/logger.cpp ../src/unknown_pong.cpp -lSDL2 -lboost_system -lboost_filesystem
+g++ -std=c++11 -O3 -fpermissive -o ../build/Unknown-Pong_LINUX ../src/main.cpp ../src/filesystem_handler.cpp ../src/global.cpp ../src/input_handler.cpp ../src/logger.cpp ../src/unknown_pong.cpp -lSDL2 -lboost_system -lboost_filesystem
