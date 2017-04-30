@@ -6,20 +6,21 @@
 #include <fstream>
 #include <ctime>
 #include <sstream>
+#include <boost/filesystem.hpp>
 
 #define internal static
 #define local_persist static
 #define global_variable static
 
-#define uint8 uint8_t  
-#define uint16 uint16_t 
-#define uint32 uint32_t 
-#define uint64 uint64_t 
+typedef uint8_t uint8;
+typedef uint16_t uint16;
+typedef uint32_t uint32;
+typedef uint64_t uint64;
 
-#define int8 int8_t 
-#define int16 int16_t
-#define int32 int32_t
-#define int64 int64_t
+typedef int8_t int8;
+typedef int16_t int16;
+typedef int32_t int32;
+typedef int64_t int64;
 
 #define MILLISECONDS_IN_A_SECOND 1000
 
@@ -46,7 +47,10 @@ enum logEnums {
 global_variable SDL_Window* globalWindow = 0; //TODO: Inspect if the window really needs to be global or not
 global_variable SDL_Renderer* globalRenderer = 0;
 global_variable SDL_Texture* globalTexture = 0;
-global_variable std::ofstream globalLogFile;
+global_variable std::ofstream globalLogFileStream;
+
+global_variable const std::string globalLogFolder = "logs";
+global_variable const std::string globalLogFile = globalLogFolder + "/latest.log";
 
 global_variable bool gameCommands[MAX_GAMECOMMANDS] = {}; //This array contains what game commands the user is inputting currently
 
@@ -85,9 +89,10 @@ internal void logToConsole(std::string text) {
 
 internal bool logToFile(std::string text) {
 	bool success = true;
-	if (globalLogFile.is_open()) {
-		globalLogFile << timeStamp() << " " << text << std::endl;
-		globalLogFile.close();
+	globalLogFileStream.open(globalLogFile, std::ios::app);
+	if (globalLogFileStream.is_open()) {
+		globalLogFileStream << timeStamp() << " " << text << std::endl;
+		globalLogFileStream.close();
 		success = true;
 	} else {
 		logToConsole("Error while writing to the log file");
@@ -120,9 +125,10 @@ internal void logErrorSDL(std::string text) {
 }
 
 //TODO: FIX
-internal void initLogFile() {
-	globalLogFile.open("logs/latest.log", std::ios::app | std::ios::trunc);
-	
+internal void clearLogFile() {
+	globalLogFileStream.open(globalLogFile, std::ios::trunc);
+	globalLogFileStream.close();
+
 }
 
 //Initializes SDL and handles all errors
@@ -197,6 +203,21 @@ internal void handleKeyboardInput(const uint8* keyboardState) {
 	}
 }
 
+internal bool createFolder(std::string folderName) {
+	const boost::filesystem::path folderPath(folderName);
+	return boost::filesystem::create_directory(folderPath);
+}
+
+internal void initFolders() {
+	std::string path = globalLogFolder;
+	boost::filesystem::path logsFolderPath(globalLogFolder);
+	if (!(boost::filesystem::exists(logsFolderPath))) {
+		if (!createFolder(globalLogFolder)) {
+			gameLog("Failed to create folder!", LOG_CONSOLE);
+		}
+	}
+}
+
 int main(int argc, char* args[]) {
 
 	bool isGameRunning = true;
@@ -208,7 +229,8 @@ int main(int argc, char* args[]) {
 	int fpsLimit = 144;
 
 	initSDL(gameTitle, windowWidth, windowHeight);
-	initLogFile();
+	initFolders();
+	clearLogFile();
 	initTimers(fpsLimit);
 
 	const uint8* keyboardState = SDL_GetKeyboardState(0); //Updates every time SDL_PollEvent() is called
