@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <sys/stat.h>
 
 #include <boost/filesystem.hpp>
 
@@ -7,8 +8,12 @@
 #include "global.h"
 #include "definitions.h"
 
-class FilesystemHandler {
+class FsHandler {
 public:
-	internal_method bool createFolder(std::string folderName);
-	internal_method void initFolders();
+	internal_ void createFolder(std::string folderName);
+	internal_ void initFolders();
+
+	struct files {
+		std::string logFile;
+	};
 };

@@ -1,5 +1,7 @@
 #include "logger.h"
 
+internal_ std::ofstream logFileStream;
+
 //Returns the current date in a format that's favorable for logging.
 std::string Logger::timeStamp() {
 	time_t currentTime = time(0);
@@ -31,10 +33,10 @@ void Logger::logToConsole(std::string text) {
 
  bool Logger::logToFile(std::string text) {
 	bool success = true;
-	Global::logFileStream.open(Global::logFile, std::ios::app);
-	if (Global::logFileStream.is_open()) {
-		Global::logFileStream << timeStamp() << " " << text << std::endl;
-		Global::logFileStream.close();
+	logFileStream.open(Global::logFile, std::ios::app);
+	if (logFileStream.is_open()) {
+		logFileStream << timeStamp() << " " << text << std::endl;
+		logFileStream.close();
 		success = true;
 	} else {
 		logToConsole("Error while writing to the log file");
@@ -68,7 +70,7 @@ void Logger::logErrorSDL(std::string text) {
 
 
 void Logger::clearLogFile() {
-	Global::logFileStream.open(Global::logFile, std::ios::trunc);
-	Global::logFileStream.close();
+	logFileStream.open(Global::logFile, std::ios::trunc);
+	logFileStream.close();
 
 }

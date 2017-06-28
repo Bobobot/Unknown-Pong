@@ -5,5 +5,5 @@
 
 class InputHandler {
 public:
-	internal_method void handleKeyboardInput(const uint8* keyboardState);
+	internal_ void handleKeyboardInput(const uint8* keyboardState);
 };

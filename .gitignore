@@ -29,4 +29,9 @@
 *.app
 
 # Custom
+*.sln
+*.vcxproj*
 /build
+/.vs
+/cfg/settings.cfg
+/logs

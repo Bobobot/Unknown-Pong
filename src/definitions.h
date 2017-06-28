@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 
-#define internal_method static
+#define internal_ static
 #define local_persist static
 #define global_variable static
 

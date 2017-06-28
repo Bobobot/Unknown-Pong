@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <string>
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 #include "logger.h"
 #include "global.h"
@@ -20,9 +20,9 @@ enum timerParam {
 
 class Unknown_pong {
 public:
-	internal_method bool initSDL(std::string, int, int);
-	internal_method void close();
-	internal_method uint32 timerCallbackSDL(uint32 interval, void * param);
-	internal_method void initTimers(int fpsLimit);
-	internal_method int start();
+	internal_ bool initSDL(std::string, int, int);
+	internal_ void close();
+	internal_ uint32 timerCallbackSDL(uint32 interval, void * param);
+	internal_ void initTimers(int fpsLimit);
+	internal_ int start();
 };

@@ -67,13 +67,12 @@ int Unknown_pong::start() {
 	bool isGameRunning = true;
 
 	//TODO: Read in these values from a file
-	std::string gameTitle = "Unknown Pong";
 	int windowWidth = 800;
 	int windowHeight = 600;
 	int fpsLimit = 144;
 
-	initSDL(gameTitle, windowWidth, windowHeight);
-	FilesystemHandler::initFolders();
+	initSDL(Global::gameName, windowWidth, windowHeight);
+	FsHandler::initFolders();
 	Logger::clearLogFile();
 	initTimers(fpsLimit);
 

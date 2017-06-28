@@ -9,11 +9,11 @@
 
 class Logger {
 public:
-	internal_method void gameLog(std::string text, int whereToLog);
-	internal_method void clearLogFile();
-	internal_method void logErrorSDL(std::string text);
+	internal_ void gameLog(std::string text, int whereToLog);
+	internal_ void clearLogFile();
+	internal_ void logErrorSDL(std::string text);
 private:
-	internal_method std::string timeStamp();
-	internal_method void logToConsole(std::string text);
-	internal_method bool logToFile(std::string text);
+	internal_ std::string timeStamp();
+	internal_ void logToConsole(std::string text);
+	internal_ bool logToFile(std::string text);
 };
